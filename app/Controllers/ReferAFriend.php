@@ -7,7 +7,8 @@ use CodeIgniter\Controller;
 class ReferAFriend extends BaseController
 {
     public function __construct(){
-        helper(['url','form']);
+        helper(['url','form','text']);
+        $view = \Config\Services::renderer();
     }
     public function index()
     {   
@@ -31,7 +32,32 @@ class ReferAFriend extends BaseController
             echo view('includes/footer.php');
        }
        else{
-           echo 'correct';
-       }
+            $referral_id = $this->request->getPost('referrerId');
+            $name = $this->request->getPost('name');
+            $email = $this->request->getPost('email');
+            $phone = $this->request->getPost('phone');
+            $referral_code = $this->referralCodeGenerator();
+            $discount_code = $this->discountCouponGenerator();
+            $data = [
+                'name'  => $referral_id,
+                'email' => $email,
+                'phone' => $phone,
+                'referred_by'   =>  $referral_id,
+                'referral_code' =>  $referral_code,
+                'discount_code' =>  $discount_code
+            ];
+            $formModel->insert($data);
+            $data = [
+                'referral_code' => $referral_code,
+                'discount_code' =>  $discount_code
+            ];
+            echo view('pages/refer-successful.php', $data);
+        }
+    }
+    public function referralCodeGenerator(){
+        return strtoupper(random_string('alnum', 8));
+    }
+    public function discountCouponGenerator(){
+        return strtoupper(random_string('alnum', 8));
     }
 }

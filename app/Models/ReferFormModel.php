@@ -7,5 +7,5 @@ class ReferFormModel extends Model
 {
     protected $table = 'referral_data';
     protected $primaryKey = 'ref_id';
-    protected $allowedFields = ['name','email','phone','reffered_by','created_at'];
+    protected $allowedFields = ['name','email','phone','referred_by','created_at','referral_code','discount_code'];
 }
