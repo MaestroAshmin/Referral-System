@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\UserModel;
+use App\Models\EmailModel;
 
 class User extends BaseController
 {
@@ -19,39 +20,120 @@ class User extends BaseController
    }
    public function auth()
     {
-        $session = session();
-        $model = new UserModel();
-        $email = $this->request->getPost('email');
-        $password = $this->request->getPost('password');
-        $data = $model->where('email', $email)->first();
-        
-        if($data){
-            $pass = $data['password'];
-            $pass_hash = password_hash($password, PASSWORD_BCRYPT);
-            $verify_pass = password_verify($password, $pass_hash);
-            // echo $pass_hash;
-            // echo '\n';
-            // echo $password;
-            // exit;
-            if($verify_pass){
-                $ses_data = [
-                    'user_id'       => $data['id'],
-                    'user_email'    => $data['email'],
-                    'user_role'    => $data['user_role'],
-                    'logged_in'     => TRUE
-                ];
-                $session->set($ses_data);
-                return redirect()->to('/refer-a-friend');
-            }else{
-                $session->setFlashdata('msg', 'Wrong Password');
-                return redirect()->to('/login');
+        $data = [];
+        if($this->request->getMethod() == 'post'){
+            $rules = [
+                'email' => 'required|min_length[6]|max_length[50]|valid_email',
+                'password' => 'required|min_length[8]|max_length[255]|validateUser[email,password]',
+            ];
+            $errors = [
+                'password'  => [
+                    'validateUser' => 'Email or Password does not match'
+                ]
+            ];
+            if(!$this->validate($rules, $errors)){
+                $data['validation'] = $this->validator;
             }
-        }else{
-            $session->setFlashdata('msg', 'Email not Found');
-            return redirect()->to('login');
+            else{
+                $model = new UserModel();
+                $user = $model->where('email',$this->request->getVar('email'))
+                                ->first();
+                $this->setUserSession($user);    
+                return redirect()->to('dashboard');       
+            }
+        }
+        echo view('includes/header.php');
+        echo view('pages/login.php', $data);
+        echo view('includes/footer.php');
+    }
+    public function register()
+    {
+        
+        echo view('pages/register.php');
+    }
+    public function store(){
+        $data = [];
+
+        if ($this->request->getMethod() == 'post') {
+            
+            $validation =  \Config\Services::validation();
+            $rules =  $validation->getRuleGroup('registration');
+            if (!$this->validate($rules)) {
+
+                return view('pages/register.php', [
+                    "validation" => $this->validator,
+                ]);
+            } else {
+                $model = new UserModel();
+                $to = $this->request->getVar('email');
+                $verificationText = md5((string)$to);
+                $newData = [
+                    'name' => $this->request->getVar('name'),
+                    'phone_number' => $this->request->getVar('contact'),
+                    'email' => $this->request->getVar('email'),
+                    'password' => $this->request->getVar('password'),
+                    'verification_code' => $verificationText,
+                    'user_role' => 1,
+                ];
+                $model->save($newData);
+                
+                $email = new EmailModel();
+                $email->send_verification_email($to,$verificationText);
+                $session = session();
+                $session->setFlashdata('success', 'Successful Registration Please Check your email to activate your account');
+                return redirect()->to('login');
+            }
         }
     }
-   public function logout()
+    private function setUserSession($user){
+        $session = session();
+        $ses_data = [
+                    'user_id'       => $user['id'],
+                    'user_name'     =>  $user['name'],
+                    'user_email'    => $user['email'],
+                    'user_role'    => $user['user_role'],
+                    'isLoggedIn'     => TRUE
+                ];
+        $session->set($ses_data);
+        return true;
+    }
+  
+    public function verify_user(){
+        $uri = current_url(true);
+        $verification_code = $uri->getSegment(2);
+        $model = new UserModel();
+        $user = $model->where('verification_code',$verification_code)
+                        ->first();
+        if($user['is_activated'] == 1){
+            return redirect()->to('dashboard');  
+        }
+        else{
+            $update_data = [
+                'is_activated' => 1,
+            ];
+            $update_activation_status = $model->update($user['id'],$update_data);
+            if($update_activation_status){
+                $data = [
+                    'message' => 'Account has been verified successfully. Please login to Continue'
+                ];
+                $view = \Config\Services::renderer();
+                echo view('includes/header.php');
+                echo view('pages/verification.php', $data);
+                echo view('includes/footer.php');
+            }
+            else{
+                $data = [
+                    'message' => 'Account Verification Failed'
+                ];
+                echo view('includes/header.php');
+                echo view('pages/verification.php', $data);
+                echo view('includes/footer.php');
+            }
+            
+        }
+        
+    }
+    public function logout()
     {
         $session = session();
         $session->destroy();

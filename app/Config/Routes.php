@@ -50,11 +50,13 @@ if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
     require APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php';
 }
 
-// $routes->get('/', 'SignupController::index');
-$routes->get('/login', 'User::login');
+
+$routes->get('login', 'User::login');
+$routes->get('register', 'User::register');
 $routes->post('auth', 'User::auth');
-$routes->get('refer-a-friend', 'ReferAFriend::index');
+$routes->get('refer-a-friend', 'ReferAFriend::index',['filter' => 'authGuard']);
+$routes->add('verify/(:any)', 'User::verify_user');
 
+// dashboard
+$routes->get('dashboard', 'DashBoard::index',['filter' => 'authGuard']);
 
-// $routes->get('/signin', 'SigninController::index');
-// $routes->get('/profile', 'ProfileController::index',['filter' => 'authGuard']);
