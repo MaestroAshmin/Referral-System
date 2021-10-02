@@ -52,6 +52,8 @@ if (file_exists(APPPATH . 'Config/' . ENVIRONMENT . '/Routes.php')) {
 
 
 $routes->get('login', 'User::login');
+$routes->get('logout', 'User::logout');
+
 $routes->get('register', 'User::register');
 $routes->post('auth', 'User::auth');
 $routes->get('refer-a-friend', 'ReferAFriend::index',['filter' => 'authGuard']);
@@ -59,4 +61,6 @@ $routes->add('verify/(:any)', 'User::verify_user');
 
 // dashboard
 $routes->get('dashboard', 'DashBoard::index',['filter' => 'authGuard']);
+$routes->get('use-referral-code', 'DashBoard::use_referral_code',['filter' => 'authGuard']);
+
 
