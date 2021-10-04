@@ -39,27 +39,29 @@ class ReferAFriend extends BaseController
             $name = $this->request->getPost('name');
             $email = $this->request->getPost('email');
             $phone = $this->request->getPost('phone');
-            $referral_code = $this->referralCodeGenerator();
-            $qr_path = $this->qrcodeGenerator($referral_code);
-            $emailModel = new EmailModel();
-            $emailModel->send_qr_code($email, $qr_path);
-            // $discount_code = $this->discountCouponGenerator();
-            $data = [
-                'name'  => $name,
-                'email' => $email,
-                'phone' => $phone,
-                'referred_by'   =>  $referral_id,
-                'referral_code' =>  $referral_code,
-                // 'discount_code' =>  $discount_code
-            ];
-            $formModel->insert($data);
-            // $data = [
-            //     'referral_code' => $referral_code,
-            //     'discount_code' =>  $discount_code
-            // ];
-            $session = session();
-            $session->setFlashdata('message', 'Successfully Referred!');
-            return redirect()->to('dashboard');
+            if($this->isAlreadyReferred($name,$email, $phone)){
+                $session = session();
+                $session->setFlashdata('failure', 'This user has already been referred previously');
+                return redirect()->to('dashboard');
+            }
+            else{
+                $referral_code = $this->referralCodeGenerator();
+                $qr_path = $this->qrcodeGenerator($referral_code);
+                $emailModel = new EmailModel();
+                $emailModel->send_qr_code($email, $qr_path);
+                $data = [
+                    'name'  => $name,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'referred_by'   =>  $referral_id,
+                    'referral_code' =>  $referral_code,
+                ];
+                $formModel->insert($data);
+                $session = session();
+                $session->setFlashdata('message', 'Successfully Referred!');
+                return redirect()->to('dashboard');
+            }
+            
         }
     }
     public function referralCodeGenerator(){
@@ -93,4 +95,101 @@ class ReferAFriend extends BaseController
         }
         exit;
 	}
+    public function use_referral_code(){
+        if($this->request->getMethod() == 'post'){
+            $rules = [
+                'referralCode' => 'required',
+            ];
+           
+            if(!$this->validate($rules)){
+                $session = session();
+                $session->setFlashData('refer-error','Please enter Referral Code!');
+            }
+            else{
+                $referral_code = $this->request->getVar('referralCode');
+                $referModel = new ReferFormModel();
+                $refer = $referModel->where('referral_code', $referral_code)
+                                ->first();
+                if(isset($refer)){
+                    if($refer['referral_status']== 1){
+                    $session = session();
+                    $session->setFlashData('refer-error','This referral code has already been used');
+                    }
+                    else{
+                        $discount_code = $this->discountCouponGenerator();
+                        $data = [
+                            'referral_status'   =>  1,
+                            'discount_code' => $discount_code
+                        ];
+                        $referModel->update($refer['ref_id'],$data);
+                        $session = session();
+                        $session->setFlashData('refer-success','Referral Code has been used successfully');
+                    }
+                }
+                else{
+                    $session = session();
+                    $session->setFlashData('refer-error','Referral Code Wrong or not in database');
+                }
+                
+
+            }
+            return redirect()->to('use-referral-code');
+
+        }
+    }
+    public function use_discount_code(){
+        if($this->request->getMethod() == 'post'){
+            $rules = [
+                'discountCode' => 'required',
+            ];
+           
+            if(!$this->validate($rules)){
+                $session = session();
+                $session->setFlashData('refer-error','Please enter Discount Code!');
+            }
+            else{
+                $discount_code = $this->request->getVar('discountCode');
+                $referModel = new ReferFormModel();
+                $discount= $referModel->where('discount_code', $discount_code)
+                                ->first();
+                if(isset($discount)){
+                    if($discount['discount_status']== 1){
+                    $session = session();
+                    $session->setFlashData('refer-error','This discount code has already been used');
+                    }
+                    else{
+                        $data = [
+                            'discount_status'   =>  1,
+                        ];
+                        $referModel->update($discount['ref_id'],$data);
+                        $session = session();
+                        $session->setFlashData('refer-success','Discount Code has been used successfully');
+                    }
+                }
+                else{
+                    $session = session();
+                    $session->setFlashData('refer-error','Discount Code Wrong or not in database');
+                }
+                
+                // print_r($refer['referral_status']);exit;
+            }
+            return redirect()->to('use-discount-code');
+
+        }
+    }
+    public function isAlreadyReferred($name, $email, $phone){
+        $db      = \Config\Database::connect();
+        $builder = $db->table('referral_data');
+        $builder->select('*');
+        $where_array = "(name='$name' AND email='$email') OR (name='$name' AND email='$phone')";
+        $builder->where($where_array);
+        $query = $builder->get();
+        $results = $query->getResult();
+        if(!empty($results)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }

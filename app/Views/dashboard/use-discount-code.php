@@ -111,45 +111,26 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-12" style="margin-bottom:20px;">
-            <h1 class="m-0 text-dark">Refer-A-Friend</h1>
+            <h1 class="m-0 text-dark">Use Discount Code</h1>
           </div><!-- /.col -->
-          
+          <div class="col-lg-12 col-sm-12 col-md-12 col-xs-12">
+            <?php if(session()->getFlashdata('refer-error')):?>
+                                <div class="alert alert-danger"><?= session()->getFlashdata('refer-error') ?></div>
+                            <?php endif;?>
+                            <?php if(session()->getFlashdata('refer-success')):?>
+                                <div class="alert alert-success"><?= session()->getFlashdata('refer-success') ?></div>
+                            <?php endif;?>
+          </div>
           <div class="row" style="margin:0 auto;">
             <!-- <div class="form-container d-block justify-content-center align-items-center"> -->
                     <?php $validation = \Config\Services::validation(); ?>
                     <?php $session = \Config\Services::session();?>
-                <form action="ReferAFriend/referSubmit" method="post" enctype="multipart/form-data">
+                <form action="ReferAFriend/use_discount_code" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
-                            <?php if(session()->getFlashdata('msg')):?>
-                                <div class="alert alert-danger"><?= session()->getFlashdata('msg') ?></div>
-                            <?php endif;?>
-                <input type="hidden" class="form-control" id="referrerId" name="referrerId" value ="<?php echo $session->get('user_id');?>">
+                
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" class="form-control" id="name" name="name" aria-describedby="emailHelp">
-                        <?php if($validation->getError('name')) {?>
-                            <div class='alert alert-danger mt-2'>
-                            <?= $error = $validation->getError('name'); ?>
-                            </div>
-                        <?php }?>
-                    </div>
-                    <div class="mb-3">
-                        <label for="email" class="form-label">Email address</label>
-                        <input type="email" class="form-control" id="email" name="email" aria-describedby="emailHelp">
-                        <?php if($validation->getError('email')) {?>
-                            <div class='alert alert-danger mt-2'>
-                            <?= $error = $validation->getError('email'); ?>
-                            </div>
-                        <?php }?>
-                    </div>
-                    <div class="mb-3">
-                        <label for="phone" class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="phone" name="phone" aria-describedby="emailHelp">
-                        <?php if($validation->getError('phone')) {?>
-                            <div class='alert alert-danger mt-2'>
-                            <?= $error = $validation->getError('phone'); ?>
-                            </div>
-                        <?php }?>
+                        <label for="discountCode" class="form-label">Enter Discount Code Here:</label>
+                        <input type="text" class="form-control" id="discountCode" name="discountCode">
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>

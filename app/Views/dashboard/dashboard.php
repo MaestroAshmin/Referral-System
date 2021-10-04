@@ -89,6 +89,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <?php } ?>
+           <?php if($_SESSION['user_role']==0){?>
+          <li class="nav-item">
+            <a href="<?= base_url('use-discount-code');?>" class="nav-link">
+              <i class="nav-icon fas fa-user-friends"></i>
+              <p>
+                Use Discount Code
+                <!-- <span class="right badge badge-danger">New</span> -->
+              </p>
+            </a>
+          </li>
+          <?php } ?>
         </ul>
       </nav>
       <!-- /.sidebar-menu -->
@@ -104,6 +115,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="row">
           <?php if(session()->getFlashdata('message')):?>
                             <div class="alert alert-success"><?= session()->getFlashdata('message') ?></div>
+                        <?php endif;?>
+        </div>
+        <div class="row">
+          <?php if(session()->getFlashdata('failure')):?>
+                            <div class="alert alert-danger"><?= session()->getFlashdata('failure') ?></div>
                         <?php endif;?>
         </div>
         <div class="row mb-2">
@@ -123,7 +139,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                             <th>Referred By</th>
                             <?php }?>
                             <th>Referral Code</th>
+                            <th>Referral Status</th>
                             <th>Discount Code</th>
+                            <th>Discount Status</th>
                             <th>Referred At</th>
                         </tr>
                     </thead>
@@ -133,7 +151,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         if($_SESSION['user_role'] == 0){
                           foreach($result as $rs){
                            echo "<tr><td>" . $i. "</td><td>" . $rs->name . "</td><td>"
-                                . $rs->email. "</td><td>".$rs->phone. "</td><td>". $rs->referred_by. "</td><td>".$rs->referral_code. "</td><td>".$rs->discount_code. "</td><td>".$rs->created_at
+                                . $rs->email. "</td><td>".$rs->phone. "</td><td>". $rs->referred_by. "</td><td>".$rs->referral_code. "</td><td>".(($rs->referral_status == 0)? 'UNUSED':'USED')."</td><td>".$rs->discount_code. "</td><td>".(($rs->referral_status == 0)? 'UNUSED':'USED')."</td><td>".$rs->created_at
                                 ."</td></tr>";
                                 $i++;
                           // echo $rs->name;exit;
@@ -143,7 +161,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         else{
                           foreach($result as $rs){
                            echo "<tr><td>" . $i. "</td><td>" . $rs->name . "</td><td>"
-                                . $rs->email. "</td><td>".$rs->phone. "</td><td>".$rs->referral_code. "</td><td>".$rs->discount_code. "</td><td>".$rs->created_at
+                                . $rs->email. "</td><td>".$rs->phone. "</td><td>".$rs->referral_code. "</td><td>".(($rs->referral_status == 0)? 'UNUSED':'USED')."</td><td>".$rs->discount_code. "</td><td>".(($rs->referral_status == 0)? 'UNUSED':'USED')."</td><td>".$rs->created_at
                                 ."</td></tr>";
                                 $i++;
                           }

@@ -86,6 +86,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <?php } ?>
+          <?php if($_SESSION['user_role']==0){?>
+          <li class="nav-item">
+            <a href="<?= base_url('use-discount-code');?>" class="nav-link">
+              <i class="nav-icon fas fa-user-friends"></i>
+              <p>
+                Use Discount Code
+                <!-- <span class="right badge badge-danger">New</span> -->
+              </p>
+            </a>
+          </li>
+          <?php } ?>
         </ul>
       </nav>
       <!-- /.sidebar-menu -->
@@ -102,6 +113,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <div class="col-sm-12" style="margin-bottom:20px;">
             <h1 class="m-0 text-dark">Refer-A-Friend</h1>
           </div><!-- /.col -->
+          <div class="col-lg-12 col-sm-12 col-md-12 col-xs-12">
+            <?php if(session()->getFlashdata('refer-error')):?>
+                                <div class="alert alert-danger"><?= session()->getFlashdata('refer-error') ?></div>
+                            <?php endif;?>
+                            <?php if(session()->getFlashdata('refer-success')):?>
+                                <div class="alert alert-success"><?= session()->getFlashdata('refer-success') ?></div>
+                            <?php endif;?>
+          </div>
           
           <div class="row" style="margin:0 auto;">
             <!-- <div class="form-container d-block justify-content-center align-items-center"> -->
@@ -109,9 +128,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php $session = \Config\Services::session();?>
                 <form action="ReferAFriend/use_referral_code" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
-                            <?php if(session()->getFlashdata('msg')):?>
-                                <div class="alert alert-danger"><?= session()->getFlashdata('msg') ?></div>
-                            <?php endif;?>
+                            
                 <input type="hidden" class="form-control" id="referrerId" name="referrerId" value ="<?php echo $session->get('user_id');?>">
                     <div class="mb-3">
                         <label for="referralCode" class="form-label">Enter Referral Code Here:</label>
