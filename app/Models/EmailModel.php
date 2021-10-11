@@ -43,5 +43,35 @@ class EmailModel extends Model {
        print_r($data);exit;
     }
  }
+ function send_referral_link($to,$referral_code){
+    $email = \Config\Services::email();
+    $email->setNewLine("\r\n");
+    $email->setFrom('ashmin@qubylive.com', "Referral Code");
+    $email->setTo($to);
+    $email->setSubject("Referral Code");
+    $email->setMessage("Dear User,\nPlease send the following referral link to the friends you want to refer our services to: http://localhost:8080/referral-link/".$referral_code."\n"."\n\nThanks\nAdmin Team");
+    if($email->send()){
+       return true;
+    }
+    else{
+       $data = $email->printDebugger(['headers']);
+       print_r($data);exit;
+    }
+ }
+ function send_referrer($to,$discount_code){
+    $email = \Config\Services::email();
+    $email->setNewLine("\r\n");
+    $email->setFrom('ashmin@qubylive.com', "Referral Code");
+    $email->setTo($to);
+    $email->setSubject("Referral Code");
+    $email->setMessage("Dear User, One of the person you have referred has successfully used our services. Please use the following discount code for getting discount in your next visit. Discount Code - ".$discount_code."");
+    if($email->send()){
+       return true;
+    }
+    else{
+       $data = $email->printDebugger(['headers']);
+       print_r($data);exit;
+    }
+ }
 }
 ?>

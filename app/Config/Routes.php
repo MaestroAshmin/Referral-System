@@ -63,6 +63,8 @@ $routes->add('verify/(:any)', 'User::verify_user');
 $routes->get('dashboard', 'DashBoard::index',['filter' => 'authGuard']);
 $routes->get('use-referral-code', 'DashBoard::use_referral_code',['filter' => 'authGuard']);
 $routes->get('use-discount-code', 'DashBoard::use_discount_code',['filter' => 'authGuard']);
+$routes->add('referral-link/(:any)', 'ReferAFriend::referral_link',);
+
 
 
 

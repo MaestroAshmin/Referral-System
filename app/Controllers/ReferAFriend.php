@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 use App\Models\ReferFormModel;
+use App\Models\UserModel;
 use CodeIgniter\Controller;
 use App\Libraries\Ciqrcode;
 use App\Models\EmailModel;
@@ -24,7 +25,7 @@ class ReferAFriend extends BaseController
        $input = $this->validate([
             'name'  => 'required|min_length[3]',
             'email' => 'required|valid_email',
-            'phone' => 'required|numeric|max_length[10]'
+            'phone' => 'required|numeric|max_length[15]'
        ]);
        $formModel = new ReferFormModel();
        if(!$input){
@@ -61,6 +62,43 @@ class ReferAFriend extends BaseController
                 $session->setFlashdata('message', 'Successfully Referred!');
                 return redirect()->to('dashboard');
             }
+            
+        }
+    }
+    public function sendReferralLink(){
+       $input = $this->validate([
+            'name'  => 'required|min_length[3]',
+            'email' => 'required|valid_email',
+            'phone' => 'required|numeric|max_length[15]'
+       ]);
+       $formModel = new ReferFormModel();
+       if(!$input){
+            echo view('includes/header.php');
+            echo view('pages/refer-a-friend.php',[
+                'validation'    =>  $this->validator
+            ]);
+            echo view('includes/footer.php');
+       }
+       else{
+            $name = $this->request->getPost('name');
+            $email = $this->request->getPost('email');
+            $phone = $this->request->getPost('phone');
+            
+            $referral_code = $this->referralCodeGenerator();
+            $qr_path = $this->qrcodeGenerator($referral_code);
+            $emailModel = new EmailModel();
+            $emailModel->send_referral_link($email, $referral_code);
+            $data = [
+                'name'  => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'referral_code' =>  $referral_code,
+                'qr_path'   =>  $qr_path,
+            ];
+            $formModel->insert($data);
+            $session = session();
+            $session->setFlashdata('message', 'Successfully sent Referral Link!');
+            return redirect()->to('dashboard');
             
         }
     }
@@ -116,7 +154,12 @@ class ReferAFriend extends BaseController
                     $session->setFlashData('refer-error','This referral code has already been used');
                     }
                     else{
+                        
                         $discount_code = $this->discountCouponGenerator();
+                        $userModel = new UserModel();
+                        $user = $userModel->where('id',$refer['referred_by'])->first();
+                        $email = new EmailModel();
+                        $email->send_referrer($user['email'],$discount_code);
                         $data = [
                             'referral_status'   =>  1,
                             'discount_code' => $discount_code
@@ -191,5 +234,28 @@ class ReferAFriend extends BaseController
         else{
             return false;
         }
+    }
+    public function referral_link(){
+        $uri = new \CodeIgniter\HTTP\URI();
+        $uri = current_url(true);
+        $referral_code = $uri->getSegment(2);
+        $db      = \Config\Database::connect();
+        $builder = $db->table('referral_data');
+        $builder->select('qr_path')->where('referral_code',$referral_code);
+        $query = $builder->get();
+        $results = $query->getResult();
+        $image = $referral_code.'.png';
+        if(!empty($results)){
+            $data = [
+                'image' => $image,
+            ];
+            echo view('includes/header.php');
+            echo view('pages/referral-code-qr.php', $data);
+            echo view('includes/footer.php');
+        }
+        else{
+            return false;
+        }
+        
     }
 }

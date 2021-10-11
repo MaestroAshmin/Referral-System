@@ -38,8 +38,18 @@ class User extends BaseController
                 $model = new UserModel();
                 $user = $model->where('email',$this->request->getVar('email'))
                                 ->first();
-                $this->setUserSession($user);    
-                return redirect()->to('dashboard');       
+                        
+                if($user['is_activated'] == 1){
+                    $this->setUserSession($user);    
+                    return redirect()->to('dashboard'); 
+                }
+                else{
+                    $session = session();
+                    $session->setFlashdata('msg', 'Please Verify your email address first. Check your inbox');
+                    return redirect()->to('login');
+                }
+                // $this->setUserSession($user);    
+                // return redirect()->to('dashboard');       
             }
         }
         echo view('includes/header.php');

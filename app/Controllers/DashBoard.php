@@ -26,8 +26,8 @@ class DashBoard extends BaseController{
                echo view('dashboard/dashboard.php', $data);
           }
           else{
-               $builder->select('referral_data.name, referral_data.email, referral_data.phone, referral_data.referral_code, referral_data.discount_code, referral_data.referral_status, referral_data.discount_status, referral_data.created_at, user_login.name as referred_by');
-               $builder->join('user_login', 'user_login.id = referral_data.referred_by')->orderBy('referral_data.created_at','DESC');
+               $builder->select('referral_data.name, referral_data.email, referral_data.phone, referral_data.referral_code, referral_data.discount_code, referral_data.referral_status, referral_data.discount_status, referral_data.created_at');
+               $builder->orderBy('referral_data.created_at','DESC');
                $query = $builder->get();
                $results = $query->getResult();
                $data = [

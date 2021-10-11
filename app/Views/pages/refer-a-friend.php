@@ -42,7 +42,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="<?php echo base_url('dashboard');?>" class="brand-link">
       <img src="images/logo.jpg" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">Referral System</span>
     </a>
@@ -64,12 +64,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <?php if($_SESSION['user_role']==1){?>
+          <?php if($_SESSION['user_role']==0){?>
           <li class="nav-item">
             <a href="<?= base_url('refer-a-friend');?>" class="nav-link">
               <i class="nav-icon fas fa-user-friends"></i>
               <p>
-                Refer A Friend
+                Send Referral link
                 <!-- <span class="right badge badge-danger">New</span> -->
               </p>
             </a>
@@ -111,19 +111,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-12" style="margin-bottom:20px;">
-            <h1 class="m-0 text-dark">Refer-A-Friend</h1>
+            <h1 class="m-0 text-dark">Send Referral Link</h1>
           </div><!-- /.col -->
           
           <div class="row" style="margin:0 auto;">
             <!-- <div class="form-container d-block justify-content-center align-items-center"> -->
                     <?php $validation = \Config\Services::validation(); ?>
                     <?php $session = \Config\Services::session();?>
-                <form action="ReferAFriend/referSubmit" method="post" enctype="multipart/form-data">
+                <form action="ReferAFriend/sendReferralLink" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                             <?php if(session()->getFlashdata('msg')):?>
                                 <div class="alert alert-danger"><?= session()->getFlashdata('msg') ?></div>
                             <?php endif;?>
-                <input type="hidden" class="form-control" id="referrerId" name="referrerId" value ="<?php echo $session->get('user_id');?>">
+                
                     <div class="mb-3">
                         <label for="name" class="form-label">Name</label>
                         <input type="text" class="form-control" id="name" name="name" aria-describedby="emailHelp">
